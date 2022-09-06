@@ -60,6 +60,7 @@ Short Url Generator dibuat menggunakan teknologi:
 - [Pico CSS](https://picocss.com/)
 - [Bootstrap Icon](https://icons.getbootstrap.com/)
 - [Sweetalert 2](https://sweetalert2.github.io/)
+- [API](https://shrtco.de/docs)
 
 ## :white_check_mark: Requirements ##
 
