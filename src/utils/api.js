@@ -2,7 +2,7 @@ const api =
     import.meta.env.VITE_LINK_API;
 
 export const apiStore = async (value) => {
-    const response = await fetch(api + "?url=" + value, {
+    const response = await fetch(`${api}?url=${value}`, {
         method: 'POST',
         headers: {
             Accept: "application/json",
