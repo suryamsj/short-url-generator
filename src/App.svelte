@@ -1,15 +1,22 @@
 <script>
-  import { apiStore } from "./store/apiStore";
   import Swal from "sweetalert2";
+  import { fly } from "svelte/transition";
+  import { apiStore } from "./utils/api";
+  import { shortlinks, Eror, Success } from "./utils/utils";
 
   let loading = false;
   let link = "";
   let name = "";
-
-  let shortlinks = localStorage.getItem("links")
-    ? JSON.parse(localStorage.getItem("links"))
-    : [];
+  let temp = shortlinks;
   let theme = document.getElementById("theme");
+
+  function changeTheme() {
+    if (theme.dataset.theme == "dark") {
+      theme.dataset.theme = "light";
+    } else {
+      theme.dataset.theme = "dark";
+    }
+  }
 
   /**
    * @param {string} name
@@ -20,49 +27,56 @@
       title: name,
       link: links,
     });
-    shortlinks = shortlinks;
+    temp = shortlinks;
   }
 
   /**
+   *
    * @param {number} index
    */
   function removeLink(index) {
-    shortlinks.splice(index, 1);
-    shortlinks = shortlinks;
+    temp.splice(index, 1);
+    temp = temp;
   }
 
-  function changeTheme() {
-    if (theme.dataset.theme == "dark") {
-      theme.dataset.theme = "light";
-    } else {
-      theme.dataset.theme = "dark";
-    }
-  }
-
-  // Store the shortlink
-  const storeApi = async (/** @type {string} */ value) => {
+  /**
+   * Store the shortlink
+   * @param {string} value
+   */
+  const storeApi = async (value) => {
     try {
       loading = true;
       const data = await apiStore(value);
       addLink(name, data.result.full_short_link);
-      Swal.fire({
-        icon: "success",
-        title: "Success",
-        text: "Successfully added data",
-      });
+      Success("Succesfully added data");
     } catch (error) {
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: error,
-      });
+      Eror(error);
     } finally {
       loading = false;
       name = link = "";
     }
   };
 
-  $: localStorage.setItem("links", JSON.stringify(shortlinks));
+  /**
+   * Confirm Dialog
+   * @param {number} index
+   */
+  function confirmButton(index) {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to see your link, if you delete it",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        removeLink(index);
+        Success("Successfully delete data");
+      }
+    });
+  }
+
+  $: localStorage.setItem("links", JSON.stringify(temp));
 </script>
 
 <main class="container">
@@ -129,9 +143,12 @@
             </tr>
           </thead>
           <tbody>
-            {#each shortlinks as datas, index}
+            {#each temp as datas, index}
               {#if datas !== null}
-                <tr>
+                <tr
+                  in:fly={{ y: -50, duration: 450, delay: 550 }}
+                  out:fly={{ y: -50, duration: 450 }}
+                >
                   <th scope="row">{index + 1}</th>
                   <td>{datas.title}</td>
                   <td>
@@ -140,7 +157,7 @@
                   <td>
                     <button
                       class="secondary"
-                      on:click={() => removeLink(index)}
+                      on:click={() => confirmButton(index)}
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
